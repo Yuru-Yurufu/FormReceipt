@@ -1,0 +1,46 @@
+{
+  "manifest_version": 3,
+  "name": "Form Receipt — Googleフォーム回答控え",
+  "short_name": "Form Receipt",
+  "version": "1.2.0",
+  "description": "Googleフォームの送信完了を確認してから、自分の回答の控えを履歴に保存します。Webhookで Discord・Slack などに送ることもできます。",
+  "homepage_url": "https://github.com/Yuru-Yurufu/FormReceipt",
+  "permissions": [
+    "storage"
+  ],
+  "optional_host_permissions": [
+    "https://*/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://docs.google.com/forms/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  },
+  "action": {
+    "default_title": "Form Receipt の設定と履歴",
+    "default_icon": {
+      "16": "icons/16.png",
+      "32": "icons/32.png",
+      "48": "icons/48.png"
+    }
+  },
+  "icons": {
+    "16": "icons/16.png",
+    "32": "icons/32.png",
+    "48": "icons/48.png",
+    "128": "icons/128.png"
+  }
+}

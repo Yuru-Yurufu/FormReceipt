@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Form Receipt</title>
+<link rel="stylesheet" href="options.css">
+</head>
+<body>
+<main>
+  <header>
+    <img src="icons/48.png" alt="" width="40" height="40">
+    <div>
+      <h1>Form Receipt</h1>
+      <p class="sub">Googleフォームの送信完了を確認してから、回答の控えをここに残します。Webhookで外部に送ることもできます。</p>
+    </div>
+  </header>
+
+  <section class="card">
+    <h2>送信履歴</h2>
+    <input id="search" type="search" placeholder="フォーム名・質問・回答で検索">
+    <div id="history"></div>
+  </section>
+
+  <section class="card">
+    <h2>Webhookでの送信</h2>
+    <label class="switch-row">
+      <input type="checkbox" id="enabled">
+      <span>Webhookにも送る（オフでも履歴はこのブラウザに残ります）</span>
+    </label>
+
+    <label for="webhook">Webhook URL</label>
+    <div class="row">
+      <input id="webhook" type="password" autocomplete="off" placeholder="https://…">
+      <button id="showWebhook" class="ghost" type="button">表示</button>
+    </div>
+    <p id="kind" class="sub"></p>
+
+    <div class="row actions">
+      <button id="save" type="button">保存</button>
+      <button id="test" class="ghost" type="button">テスト送信</button>
+      <span id="status" role="status"></span>
+    </div>
+
+    <details class="guide">
+      <summary>Webhook URLの作り方</summary>
+      <h3>Discord</h3>
+      <ol>
+        <li>控えを受け取りたいチャンネルの ⚙️「チャンネルの編集」を開きます（自分だけのサーバーがおすすめです）。</li>
+        <li>「連携サービス」→「ウェブフック」→「新しいウェブフック」を押します。</li>
+        <li>「ウェブフックURLをコピー」を押し、上の欄に貼り付けます。</li>
+      </ol>
+      <h3>Slack</h3>
+      <ol>
+        <li>Slack API の「Your Apps」でアプリを作成し、「Incoming Webhooks」をオンにします。</li>
+        <li>「Add New Webhook to Workspace」で送信先のチャンネルを選び、表示されたURLを貼り付けます。</li>
+      </ol>
+      <h3>Google Chat</h3>
+      <ol>
+        <li>スペースの名前 →「アプリと統合」→「Webhook を追加」で作成し、URLを貼り付けます（Google Workspace のアカウントが必要です）。</li>
+      </ol>
+      <h3>そのほか</h3>
+      <p class="sub">上記以外のURLには、回答をJSON形式でPOSTします（Zapier・Make・n8n・自作のサーバーなどで受け取れます）。JSONの <code>text</code> には読みやすい形の全文が入るので、Mattermost など <code>text</code> を表示するサービスではそのまま読めます。</p>
+      <p class="sub">保存するときに、送信先のサイトへのアクセス許可を求める画面が出ます。許可したサイト以外には送信しません。</p>
+      <p class="sub">Webhook URLを知っている人は誰でもそこに送信できるので、他人には教えないでください。</p>
+    </details>
+  </section>
+
+  <section class="card">
+    <h2>データ</h2>
+    <div class="row">
+      <button id="export" class="ghost" type="button">履歴をJSONで書き出す</button>
+      <button id="clearHistory" class="ghost danger" type="button">履歴をすべて消す</button>
+    </div>
+  </section>
+</main>
+<script src="options.js"></script>
+</body>
+</html>
