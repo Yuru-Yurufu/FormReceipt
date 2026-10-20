@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Form Receipt — Googleフォーム回答控え",
   "short_name": "Form Receipt",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "Googleフォームの送信完了を確認してから、自分の回答の控えを履歴に保存します。Webhookで Discord・Slack などに送ることもできます。",
   "homepage_url": "https://github.com/Yuru-Yurufu/FormReceipt",
   "permissions": [

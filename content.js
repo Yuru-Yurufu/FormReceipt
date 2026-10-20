@@ -36,6 +36,40 @@
     });
   }
 
+  const TEXT_INPUTS = 'input[type="text"],input[type="email"],input[type="url"],input[type="tel"],input[type="date"],input[type="time"],textarea';
+  const OTHER = '__other_option__';
+
+  // グリッド以外の質問の回答を読む
+  function readAnswer(item) {
+    const vals = [];
+    const choices = [...item.querySelectorAll('[role="radio"],[role="checkbox"]')];
+
+    if (choices.length) {
+      // 選択式：選んだ選択肢を順番どおりに（「その他」は記入欄の内容を添える）
+      const otherText = clean([...item.querySelectorAll(TEXT_INPUTS)].map(el => el.value).join(' '));
+      choices.filter(el => el.getAttribute('aria-checked') === 'true').forEach(el => {
+        const raw = el.getAttribute('data-value') ?? el.getAttribute('data-answer-value');
+        vals.push(raw === OTHER ? (otherText ? `その他：${otherText}` : 'その他') : choiceValue(el));
+      });
+    } else {
+      // 記述式・段落・日付など（段落の改行はそのまま残す）
+      item.querySelectorAll(TEXT_INPUTS).forEach(el => { if (el.value.trim()) vals.push(el.value.trim()); });
+    }
+
+    // 時刻・所要時間など、数字の欄が並ぶもの（例：時・分 → 09:05）
+    const nums = [...item.querySelectorAll('input[type="number"]')];
+    if (nums.length && nums.some(el => el.value !== '')) {
+      vals.push(nums.length > 1 ? nums.map(el => el.value.padStart(2, '0')).join(':') : nums[0].value);
+    }
+
+    // プルダウン（未選択の「選択」は data-value が空なので除外される）
+    item.querySelectorAll('[role="option"][aria-selected="true"]').forEach(el => {
+      const v = clean(el.getAttribute('data-value'));
+      if (v) vals.push(v);
+    });
+    return vals;
+  }
+
   // ---- 画面上の回答を読む ----
   function readQuestions() {
     const out = {};
@@ -45,20 +79,7 @@
       const title = clean(h.textContent).replace(/\s*\*$/, '');
       const grid = readGrid(item);
       if (grid) { if (title) out[title] = grid; return; }
-      const vals = [];
-      item.querySelectorAll('input[type="text"],input[type="email"],input[type="number"],input[type="url"],input[type="date"],input[type="time"],input[type="tel"],textarea')
-        .forEach(el => { if (el.value) vals.push(el.value); });
-      item.querySelectorAll('[role="radio"][aria-checked="true"],[role="checkbox"][aria-checked="true"]')
-        .forEach(el => {
-          let v = el.getAttribute('data-value') || el.getAttribute('data-answer-value') || el.getAttribute('aria-label');
-          // 「その他」を選んだ場合は横の記入欄を拾う（上の input 読み取りで既に入るので重複させない）
-          if (v === '__other_option__') v = 'その他';
-          v = clean(v);
-          if (v && !vals.includes(v)) vals.push(v);
-        });
-      item.querySelectorAll('[role="option"][aria-selected="true"]')
-        .forEach(el => { const v = clean(el.getAttribute('data-value')); if (v) vals.push(v); }); // プルダウン
-      if (title) out[title] = vals;
+      if (title) out[title] = readAnswer(item);
     });
     return out;
   }
