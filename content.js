@@ -14,6 +14,28 @@
   const CONTROLS = ['input:not([type="hidden"])', 'textarea', '[role="radio"]', '[role="checkbox"]', '[role="listbox"]'];
   const hasControl = root => CONTROLS.some(sel => root.querySelector(sel));
 
+  const CHECKED = '[role="radio"][aria-checked="true"],[role="checkbox"][aria-checked="true"]';
+  const choiceValue = el => clean(el.getAttribute('data-value') || el.getAttribute('data-answer-value') || el.getAttribute('aria-label'));
+
+  // グリッド（選択式・チェックボックス）の行の見出しを取る
+  function rowLabel(group, i) {
+    const by = group.getAttribute('aria-labelledby');
+    const labelled = by && by.split(/\s+/).map(id => document.getElementById(id)?.textContent).filter(Boolean).join(' ');
+    return clean(group.getAttribute('aria-label') || labelled || group.innerText) || `行${i + 1}`;
+  }
+
+  // グリッドなら「行：選んだ列」の形で1行ずつ返す（グリッドでなければ null）
+  function readGrid(item) {
+    const groups = [...item.querySelectorAll('[role="radiogroup"],[role="group"]')]
+      .filter(g => g.querySelector('[role="radio"],[role="checkbox"]'))
+      .filter((g, _, all) => !all.some(o => o !== g && g.contains(o))); // 入れ子になっていたら内側だけ使う
+    if (groups.length < 2) return null;
+    return groups.map((g, i) => {
+      const picked = [...g.querySelectorAll(CHECKED)].map(choiceValue).filter(Boolean);
+      return `${rowLabel(g, i)}：${picked.length ? picked.join('、') : '（未回答）'}`;
+    });
+  }
+
   // ---- 画面上の回答を読む ----
   function readQuestions() {
     const out = {};
@@ -21,6 +43,8 @@
       const h = item.querySelector('[role="heading"]');
       if (!h || !hasControl(item)) return; // 見出しだけ・説明だけの項目は除外
       const title = clean(h.textContent).replace(/\s*\*$/, '');
+      const grid = readGrid(item);
+      if (grid) { if (title) out[title] = grid; return; }
       const vals = [];
       item.querySelectorAll('input[type="text"],input[type="email"],input[type="number"],input[type="url"],input[type="date"],input[type="time"],input[type="tel"],textarea')
         .forEach(el => { if (el.value) vals.push(el.value); });
